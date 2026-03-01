@@ -43,6 +43,7 @@ export function getUserById(id: string): UserRow | undefined {
 // ── NextAuth config ───────────────────────────────────────────────────────────
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     // Google OAuth — only active when both env vars are set
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
