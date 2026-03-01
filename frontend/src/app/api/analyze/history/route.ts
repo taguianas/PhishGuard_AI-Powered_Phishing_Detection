@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 
 const BACKEND = process.env.BACKEND_URL || 'http://localhost:4000';
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const jwt = await buildJWT(token);
+  const jwt = await buildJWT(session.user);
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type');
 
-  // Route to /stats or /history based on ?type=stats
   const backendPath = type === 'stats'
     ? `${BACKEND}/api/history/stats`
     : `${BACKEND}/api/history?limit=${searchParams.get('limit') || 20}`;
@@ -24,10 +23,10 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(data, { status: res.status });
 }
 
-async function buildJWT(token: Record<string, unknown>): Promise<string> {
+async function buildJWT(user: { id?: string | null }): Promise<string> {
   const { SignJWT } = await import('jose');
   const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
-  return new SignJWT({ id: token.id as string, sub: token.sub as string })
+  return new SignJWT({ id: user.id, sub: user.id ?? undefined })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('1h')
     .sign(secret);
