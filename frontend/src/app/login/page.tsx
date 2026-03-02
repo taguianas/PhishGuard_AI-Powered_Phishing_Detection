@@ -1,13 +1,11 @@
 'use client';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const GOOGLE_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === 'true';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
@@ -22,8 +20,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid email or password.');
       } else {
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       }
     } finally {
       setLoading(false);
