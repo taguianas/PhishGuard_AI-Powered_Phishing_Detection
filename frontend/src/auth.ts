@@ -17,8 +17,8 @@ function getDb() {
 type UserRow = { id: string; email: string; name: string | null; password: string | null; image: string | null };
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
-  const rows = await getDb()`SELECT * FROM users WHERE email = ${email}`;
-  return rows[0] as UserRow | undefined;
+  const rows = (await getDb()`SELECT * FROM users WHERE email = ${email}`) as UserRow[];
+  return rows[0];
 }
 
 export async function createUser(
@@ -32,8 +32,8 @@ export async function createUser(
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  const rows = await getDb()`SELECT * FROM users WHERE id = ${id}`;
-  return rows[0] as UserRow | undefined;
+  const rows = (await getDb()`SELECT * FROM users WHERE id = ${id}`) as UserRow[];
+  return rows[0];
 }
 
 // ── NextAuth config ───────────────────────────────────────────────────────────
