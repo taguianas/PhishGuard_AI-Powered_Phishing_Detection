@@ -70,6 +70,8 @@ services:
       - key: BACKEND_URL
         sync: false   # set to: https://phishguard-backend.onrender.com
       # ↓ Set manually in Render dashboard after first deploy
+      - key: DATABASE_URL
+        sync: false   # set to your Neon connection string
       - key: NEXTAUTH_SECRET
         sync: false
       - key: NEXTAUTH_URL
