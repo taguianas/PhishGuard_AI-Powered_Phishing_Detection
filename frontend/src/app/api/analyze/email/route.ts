@@ -29,8 +29,11 @@ export async function POST(req: NextRequest) {
   try {
     data = JSON.parse(text);
   } catch {
-    console.error('[email proxy] non-JSON backend response:', text.slice(0, 200));
-    return NextResponse.json({ error: 'Unexpected response from backend.' }, { status: 502 });
+    console.error(`[email proxy] non-JSON backend response (HTTP ${res.status}):`, text.slice(0, 300));
+    const msg = res.status === 503
+      ? 'Backend is starting up — please wait ~30 seconds and try again.'
+      : `Backend returned an unexpected response (HTTP ${res.status}). Check Render logs.`;
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
 
   return NextResponse.json(data, { status: res.status });
