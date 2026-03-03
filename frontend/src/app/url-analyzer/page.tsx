@@ -33,8 +33,10 @@ export default function URLAnalyzerPage() {
         body: JSON.stringify({ url }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.errors?.[0]?.msg || 'Analysis failed');
+        const text = await res.text();
+        let data: { errors?: { msg: string }[]; error?: string } = {};
+        try { data = JSON.parse(text); } catch { /* non-JSON error body */ }
+        throw new Error(data.errors?.[0]?.msg || data.error || `Analysis failed (${res.status})`);
       }
       setResult(await res.json());
     } catch (err: unknown) {

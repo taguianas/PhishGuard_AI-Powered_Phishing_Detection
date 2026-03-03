@@ -39,8 +39,10 @@ export default function EmailAnalyzerPage() {
         body: JSON.stringify({ email_text: emailText, sender_domain: senderDomain || undefined }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.errors?.[0]?.msg || 'Analysis failed');
+        const text = await res.text();
+        let data: { errors?: { msg: string }[]; error?: string } = {};
+        try { data = JSON.parse(text); } catch { /* non-JSON error body */ }
+        throw new Error(data.errors?.[0]?.msg || data.error || `Analysis failed (${res.status})`);
       }
       setResult(await res.json());
     } catch (err: unknown) {

@@ -8,16 +8,31 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.text();
-  const res = await fetch(`${BACKEND}/api/url/analyze`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${await buildJWT(session.user)}`,
-    },
-    body,
-  });
 
-  const data = await res.json();
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND}/api/url/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${await buildJWT(session.user)}`,
+      },
+      body,
+    });
+  } catch (err) {
+    console.error('[url proxy] fetch failed:', err);
+    return NextResponse.json({ error: 'Backend service unavailable. Please try again shortly.' }, { status: 503 });
+  }
+
+  const text = await res.text();
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    console.error('[url proxy] non-JSON backend response:', text.slice(0, 200));
+    return NextResponse.json({ error: 'Unexpected response from backend.' }, { status: 502 });
+  }
+
   return NextResponse.json(data, { status: res.status });
 }
 

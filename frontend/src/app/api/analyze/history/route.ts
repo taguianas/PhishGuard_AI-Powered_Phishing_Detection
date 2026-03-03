@@ -15,11 +15,25 @@ export async function GET(req: NextRequest) {
     ? `${BACKEND}/api/history/stats`
     : `${BACKEND}/api/history?limit=${searchParams.get('limit') || 20}`;
 
-  const res = await fetch(backendPath, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(backendPath, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+  } catch (err) {
+    console.error('[history proxy] fetch failed:', err);
+    return NextResponse.json({ error: 'Backend service unavailable.' }, { status: 503 });
+  }
 
-  const data = await res.json();
+  const text = await res.text();
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    console.error('[history proxy] non-JSON backend response:', text.slice(0, 200));
+    return NextResponse.json({ error: 'Unexpected response from backend.' }, { status: 502 });
+  }
+
   return NextResponse.json(data, { status: res.status });
 }
 
